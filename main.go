@@ -4,6 +4,7 @@ import (
 	"embed"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/skip2/go-qrcode"
 	"io/fs"
 	"io/ioutil"
 	"log"
@@ -19,6 +20,18 @@ import (
 
 //go:embed frontend/dist/*
 var FS embed.FS
+
+func QrcodsController(c *gin.Context) {
+	if content := c.Query("content"); content != "" {
+		png, err := qrcode.Encode(content, qrcode.Medium, 256)
+		if err != nil {
+			log.Fatal(err)
+		}
+		c.Data(http.StatusOK, "image/png", png)
+	} else {
+		c.Status(http.StatusPreconditionRequired)
+	}
+}
 
 func GetUploadsDir() (uploads string) {
 	exe, err := os.Executable()
@@ -95,6 +108,7 @@ func main() {
 		router.POST("/api/v1/texts", TextsController)
 		router.GET("/api/v1/addresses", AddressesController)
 		router.GET("/uploads/:path", UploadsController)
+		router.GET("/api/v1/qrcodes", QrcodsController)
 		router.NoRoute(func(c *gin.Context) {
 			path := c.Request.URL.Path
 			if strings.HasPrefix(path, "/static/") {
