@@ -2,15 +2,15 @@ package main
 
 import (
 	"github.com/sharabao13/sync/server"
+	"github.com/sharabao13/sync/server/config"
 	"os"
 	"os/exec"
 	"os/signal"
 )
 
 func startBrowser() *exec.Cmd {
-	port := "27149"
 	chromePath := "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
-	cmd := exec.Command(chromePath, "--app=http://localhost:"+port+"/static/index.html")
+	cmd := exec.Command(chromePath, "--app=http://localhost:"+config.GetPort()+"/static/index.html")
 	cmd.Start()
 	return cmd
 }
@@ -24,7 +24,7 @@ func main() {
 	go server.Run()
 	cmd := startBrowser()
 	chSignal := listenToInterrupt()
-	
+
 	select {
 	case <-chSignal:
 		cmd.Process.Kill()
